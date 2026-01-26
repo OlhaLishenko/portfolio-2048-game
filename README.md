@@ -33,8 +33,8 @@ To get a local copy of this project up and running, follow these steps.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/OlhaLishenko/portfolio-landing-Museum.git
-   cd portfolio-landing-Museum
+   git clone https://github.com/OlhaLishenko/portfolio-2048-game.git
+   cd portfolio-2048-game
    ```
 
 2. **Install dependencies:**
