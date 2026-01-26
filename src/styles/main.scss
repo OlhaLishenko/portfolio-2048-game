@@ -1,3 +1,235 @@
+@use 'vars';
+
 body {
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fbf8ef;
+  font-family: sans-serif;
+  font-display: swap;
+  font-size: 24px;
+  font-weight: 900;
+  background-image: url(../images/background-image_2048.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  backdrop-filter: blur(2px);
+}
+
+.animation-appear {
+  animation: appear 0.2s ease-out;
+}
+
+.animation-connect {
+  animation: connect 0.2s ease-out;
+}
+
+.field-cell {
+  background: #d6cdc4;
+  width: 75px;
+  height: 75px;
+  border-radius: 5px;
+  color: #776e65;
+  box-sizing: border-box;
+  text-align: center;
+  vertical-align: center;
+  user-select: none;
+
+  @each $value, $color in vars.$cell-colors {
+    &--#{$value} {
+      background: $color;
+
+      @if $value >= 8 {
+        color: #f9f6f2;
+      }
+    }
+  }
+}
+
+.game-field {
+  background: #bbada0;
+  border-spacing: 10px;
+  border-radius: 5px;
+}
+
+.game-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+h1 {
+  background: #edc22e;
+  color: #f9f6f2;
+  width: 75px;
+  height: 75px;
+  font-size: 24px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff2e6;
+  width: 75px;
+  height: 75px;
+  border-radius: 5px;
+  color: #776e65;
+  box-sizing: border-box;
+  font-size: 16px;
+  margin: 0 8px 0 0;
+  position: relative;
+}
+
+.game-score-number {
+  color: #776e65;
+  opacity: 0;
+  font-size: 26px;
+  position: absolute;
+  transform: translate(50%, 50%);
+  z-index: 1;
+}
+
+.animation-number-slide {
+  animation: number-slide 0.8s ease-out;
+}
+
+.controls {
+  display: flex;
+  position: relative;
+  transition:
+    all,
+    1s ease-out;
+}
+
+.button {
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #f9f6f2;
+  font-family: sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  width: 75px;
+  height: 75px;
+  outline: none;
+  box-shadow: none;
+}
+
+.start {
+  background: #1dae28;
+  font-size: 20px;
+
+  &:hover {
+    background: #179921;
+  }
+}
+
+.restart {
+  background: #f1b2b2;
+
+  &:hover {
+    background: #f87474;
+  }
+}
+
+.message {
+  box-sizing: border-box;
+  width: 100%;
+  background: #d6cdc4;
+  color: #776e65;
+  padding: 10px;
+  text-align: center;
+  border-radius: 5px;
+  font-size: 20px;
+
+  &-start {
+    position: absolute;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 1s ease-out;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 350px;
+  position: relative;
+}
+
+.message-win {
+  background: #edc22e;
+  color: #f9f6f2;
+  position: absolute;
+  bottom: 0%;
+  transform: scale(1);
+  transition: all 1s ease-in;
+  animation: appear 0.8s ease-out;
+}
+
+.message-lose {
+  background: #f87474;
+  color: #f9f6f2;
+  position: absolute;
+  bottom: 0%;
+  transform: scale(1);
+  transition: all 1s ease-in;
+  animation: appear 0.8s ease-out;
+}
+
+.message-container {
+  width: 100%;
+  height: 150px;
+  opacity: 1;
+  transition: all 1s ease-in;
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes button-bloom {
+  from {
+    box-shadow: none;
+    background-color: #1dae28;
+  }
+  to {
+    background-color: #f87474;
+    box-shadow: 0 0 20px 5px #f87474;
+  }
+}
+
+@keyframes number-slide {
+  from {
+    transform: translate(50%, 50%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(50%, -120%);
+    opacity: 1;
+  }
 }
