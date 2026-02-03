@@ -16,6 +16,7 @@ const game = new Game();
 
 // Animation after page has loaded
 function loadPageNotification() {
+  button.removeAttribute('disabled');
   messageStart.style.bottom = '40%';
 
   const startNotif = new Promise((resolve) => {
@@ -53,6 +54,7 @@ function loadPageNotification() {
     }, 1000);
   });
 }
+
 loadPageNotification();
 
 // Function for identify each cell (Creation id such us '0-1' for each cell)
@@ -90,7 +92,6 @@ button.addEventListener('click', (e) => {
   // Screenplay for activation game and behavior for "Start" botton
   if (button.classList.contains('start')) {
     button.textContent = 'Restart';
-    button.style.width = 'auto';
     button.classList.remove('start');
     button.classList.add('restart');
 
@@ -106,100 +107,13 @@ button.addEventListener('click', (e) => {
     game.updateBoard();
 
     button.textContent = 'Start';
-    button.style.width = '75px';
+    button.style.width = '100px';
     button.classList.remove('restart');
     button.classList.add('start');
     score = 0;
     scoreInfo.textContent = '0';
   }
 });
-
-// Events for keyups for game implementation
-document.addEventListener('keyup', (e) => {
-  let modifRows; // Array wich represent Game class as rows
-  let modifColumns; // Array wich represent Game class as columns
-
-  if (e.code === 'ArrowLeft') {
-    checkEmptyCell(); // Checking is there empty cells. If no - game over.
-
-    modifRows = moveLeft(); // Implementation left move behavior
-    setScore(); // Update Score in gameboard
-
-    updateBoardArray(modifRows); // Update Game class
-    game.updateBoard(); // Update HTML
-
-    game.addNumber(); // add new cell
-    game.updateBoard(); // Update HTML
-  }
-
-  if (e.code === 'ArrowRight') {
-    checkEmptyCell(); // Checking is there empty cells. If no - game over.
-
-    modifRows = moveRight(); // Implementation right move behavior
-    setScore(); // Update Score in gameboard
-
-    updateBoardArray(modifRows); // Update Game class
-    game.updateBoard(); // Update HTML
-
-    game.addNumber(); // add new cell
-    game.updateBoard(); // Update HTML
-  }
-
-  if (e.code === 'ArrowDown') {
-    checkEmptyCell(); // Checking is there empty cells. If no - game over.
-
-    modifColumns = moveDown(); // Implementation down move behavior
-    setScore(); // Update Score in gameboard
-
-    updateBoardArray(modifColumns); // Update Game class
-    game.updateBoard(); // Update HTML
-
-    game.addNumber(); // add new cell
-    game.updateBoard(); // Update HTML
-  }
-
-  if (e.code === 'ArrowUp') {
-    checkEmptyCell(); // Checking is there empty cells. If no - game over.
-
-    modifColumns = moveUp(); // Implementation up move behavior
-    setScore(); // Update Score in gameboard
-
-    updateBoardArray(modifColumns); // Update Game class
-    game.updateBoard(); // Update HTML
-
-    game.addNumber(); // add new cell
-    game.updateBoard(); // Update HTML
-  }
-});
-
-// Updation Game class according to chenges
-function updateBoardArray(modifRows, modifColumns) {
-  let flatten;
-
-  // Depending on move. There is left/right.
-  if (modifRows) {
-    flatten = rows.flat(1);
-  }
-
-  // There is up/down.
-  if (modifColumns) {
-    const flatColumns = columns.flat(1);
-
-    flatten = [];
-
-    for (let i = 0; i < flatColumns.length; i += 4) {
-      const cell = () => {
-        return flatColumns[i];
-      };
-
-      flatten.push(cell);
-    }
-  }
-
-  game.board.forEach((_, i, gameArr) => {
-    gameArr[i].valueNum = flatten[i].valueNum;
-  });
-}
 
 // Creation rows from Game class
 function createRows() {
@@ -212,9 +126,6 @@ function createRows() {
     return boardRows;
   }, []);
 }
-// variable for iteration for implementation moves
-
-const rows = createRows();
 
 // Creation columns from Game class
 function createColumns() {
@@ -227,128 +138,166 @@ function createColumns() {
     return boardColumns;
   }, []);
 }
-// variable for iteration for implementation moves
 
-const columns = createColumns();
+function handleKeyUp(e) {
+  const rows = createRows();
+  const columns = createColumns();
+
+  const prevBoard = game.getBoardValues();
+
+  const moveTypes = {
+    ArrowLeft: () => moveLeft(rows),
+    ArrowRight: () => moveRight(rows),
+    ArrowDown: () => moveDown(columns),
+    ArrowUp: () => moveUp(columns),
+  };
+
+  const move = moveTypes[e.code];
+
+  if (!move) {
+    return;
+  }
+
+  const mergedNum = move();
+
+  const currentBoard = game.getBoardValues();
+  const boardChanged = prevBoard.some((val, i) => val !== currentBoard[i]);
+
+  if (!boardChanged) {
+    return;
+  }
+
+  if (mergedNum > 0) {
+    score += mergedNum;
+    setScore(); // Update Score in gameboard
+  }
+
+  game.addNumber();
+  checkGameOver();
+  game.updateBoard(); // Update HTML
+}
+
+document.addEventListener('keyup', handleKeyUp);
 
 // Implementatiom moveup
-function moveUp() {
-  columns.forEach((column) => {
-    let newColumn = column.map((cellItem) => ({ ...cellItem })); // clone cells
+function moveUp(columns) {
+  let newScore = 0;
 
-    // remove all empty cells
-    newColumn = newColumn.filter((cellItem) => cellItem.valueNum !== undefined);
+  columns.forEach((column) => {
+    const cellVal = column
+      .map((cellItem) => cellItem.valueNum)
+      .filter((cellItem) => cellItem !== undefined);
 
     // iteration and check, are there duble numbers
-    for (let i = 0; i < newColumn.length - 1; i++) {
-      if (newColumn[i].valueNum === newColumn[i + 1].valueNum) {
-        newColumn[i + 1].valueNum *= 2; // if yes, duble number
-        score += newColumn[i + 1].valueNum; // increase score variable
-        number.textContent = `+${newColumn[i + 1].valueNum}`; // embed increasing number to 'number' variable, which represent animation over score
-        newColumn[i].valueNum = undefined;
+    for (let i = 0; i < cellVal.length - 1; i++) {
+      if (cellVal[i] === cellVal[i + 1]) {
+        cellVal[i] *= 2; // if yes, duble number
+        newScore += cellVal[i]; // increase score variable
+        number.textContent = `+${cellVal[i]}`; // embed increasing number to 'number' variable, which represent animation over score
+        cellVal.splice(i + 1, 1);
       }
     }
 
-    // clear array off underfined
-    newColumn = newColumn.filter((cellItem) => cellItem.valueNum !== undefined);
-
     // add objects for achiving initial column length
-    while (newColumn.length < column.length) {
-      newColumn.push({ valueNum: undefined });
+    while (cellVal.length < column.length) {
+      cellVal.push(undefined);
     }
 
     // replace initials column values to new values
     for (let i = 0; i < column.length; i++) {
-      column[i].valueNum = newColumn[i].valueNum;
+      column[i].valueNum = cellVal[i];
     }
   });
 
-  return columns;
+  return newScore;
 }
 
-function moveDown() {
+function moveDown(columns) {
+  let newScore = 0;
+
   columns.forEach((column) => {
-    let newColumn = column.map((cellItem) => ({ ...cellItem }));
+    const cellVal = column
+      .map((cellItem) => cellItem.valueNum)
+      .filter((cellItem) => cellItem !== undefined);
 
-    newColumn = newColumn.filter((cellItem) => cellItem.valueNum !== undefined);
-
-    for (let i = 0; i < newColumn.length - 1; i++) {
-      if (newColumn[i].valueNum === newColumn[i + 1].valueNum) {
-        newColumn[i + 1].valueNum *= 2;
-        score += newColumn[i + 1].valueNum;
-        number.textContent = `+${newColumn[i + 1].valueNum}`;
-        newColumn[i].valueNum = undefined;
+    // iteration and check, are there duble numbers
+    for (let i = cellVal.length - 1; i > 0; i--) {
+      if (cellVal[i] === cellVal[i - 1]) {
+        cellVal[i] *= 2; // if yes, duble number
+        newScore += cellVal[i]; // increase score
+        number.textContent = `+${cellVal[i]}`; // embed increasing number to 'number' variable, which represent animation over score
+        cellVal.splice(i - 1, 1);
       }
     }
 
-    newColumn = newColumn.filter((cellItem) => cellItem.valueNum !== undefined);
-
-    while (newColumn.length < column.length) {
-      newColumn.unshift({ valueNum: undefined });
+    while (cellVal.length < column.length) {
+      cellVal.unshift(undefined);
     }
 
     for (let i = 0; i < column.length; i++) {
-      column[i].valueNum = newColumn[i].valueNum;
+      column[i].valueNum = cellVal[i];
     }
   });
 
-  return columns;
+  return newScore;
 }
 
-function moveRight() {
+function moveRight(rows) {
+  let newScore = 0;
+
   rows.forEach((row) => {
-    let newRow = row.map((cellItem) => ({ ...cellItem }));
+    const cellVal = row
+      .map((cellItem) => cellItem.valueNum)
+      .filter((cellItem) => cellItem !== undefined);
 
-    newRow = newRow.filter((cellItem) => cellItem.valueNum !== undefined);
-
-    for (let i = 0; i < newRow.length - 1; i++) {
-      if (newRow[i].valueNum === newRow[i + 1].valueNum) {
-        newRow[i + 1].valueNum *= 2;
-        score += newRow[i + 1].valueNum;
-        number.textContent = `+${newRow[i + 1].valueNum}`;
-        newRow[i].valueNum = undefined;
+    for (let i = cellVal.length - 1; i > 0; i--) {
+      if (cellVal[i] === cellVal[i - 1]) {
+        cellVal[i] *= 2;
+        newScore += cellVal[i];
+        number.textContent = `+${cellVal[i]}`;
+        cellVal.splice(i - 1, 1);
       }
     }
 
-    newRow = newRow.filter((cellItem) => cellItem.valueNum !== undefined);
-
-    while (newRow.length < row.length) {
-      newRow.unshift({ valueNum: undefined });
+    while (cellVal.length < row.length) {
+      cellVal.unshift(undefined);
     }
 
     for (let i = 0; i < row.length; i++) {
-      row[i].valueNum = newRow[i].valueNum;
+      row[i].valueNum = cellVal[i];
     }
   });
 
-  return rows;
+  return newScore;
 }
 
-function moveLeft() {
-  rows.forEach((row) => {
-    let newRow = row.filter((cellItem) => cellItem.valueNum !== undefined);
+function moveLeft(rows) {
+  let newScore = 0;
 
-    for (let i = 0; i < newRow.length - 1; i++) {
-      if (newRow[i].valueNum === newRow[i + 1].valueNum) {
-        newRow[i].valueNum *= 2;
-        score += newRow[i + 1].valueNum;
-        number.textContent = `+${newRow[i + 1].valueNum}`;
-        newRow[i + 1].valueNum = undefined;
+  rows.forEach((row) => {
+    const cellVal = row
+      .map((cellItem) => cellItem.valueNum)
+      .filter((cellItem) => cellItem !== undefined);
+
+    for (let i = 0; i < cellVal.length - 1; i++) {
+      if (cellVal[i] === cellVal[i + 1]) {
+        cellVal[i] *= 2;
+        newScore += cellVal[i];
+        number.textContent = `+${cellVal[i]}`;
+        cellVal.splice(i + 1, 1);
       }
     }
 
-    newRow = newRow.filter((cellItem) => cellItem.valueNum !== undefined);
-
-    while (newRow.length < row.length) {
-      newRow.push({ valueNum: undefined });
+    while (cellVal.length < row.length) {
+      cellVal.push(undefined);
     }
 
     for (let i = 0; i < row.length; i++) {
-      row[i].valueNum = newRow[i].valueNum;
+      row[i].valueNum = cellVal[i];
     }
   });
 
-  return rows;
+  return newScore;
 }
 
 // Updation score and implementation victorious screenplay
@@ -362,7 +311,10 @@ function setScore() {
   }, 800);
 
   // implementation victorious screenplay
-  if (score >= 2048) {
+
+  const haveVictoriousNum = game.board.some((cell) => cell.valueNum >= 2048);
+
+  if (haveVictoriousNum === true) {
     message.style.opacity = '1';
     messageWin.classList.remove('hidden');
 
@@ -371,13 +323,13 @@ function setScore() {
       messageWin.style.transform = 'scale(1.3)';
     }, 1000);
 
-    document.removeEventListener('keyup');
+    document.removeEventListener('keyup', handleKeyUp);
   }
 }
 
 // implementation losing screenplay
-function checkEmptyCell() {
-  if (game.getRandomCell() === undefined) {
+function checkGameOver() {
+  if (game.isGameOver()) {
     message.style.opacity = '1';
     messageLose.classList.remove('hidden');
     messageLose.textContent = `You lose with ${score} score`;
@@ -387,6 +339,6 @@ function checkEmptyCell() {
       messageLose.style.transform = 'scale(1.3)';
     }, 1000);
 
-    document.removeEventListener('keyup');
+    document.removeEventListener('keyup', handleKeyUp);
   }
 }

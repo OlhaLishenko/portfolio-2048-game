@@ -1,4 +1,5 @@
 @use 'vars';
+@use 'extends';
 
 body {
   margin: 0;
@@ -7,10 +8,10 @@ body {
   justify-content: center;
   min-height: 100vh;
   background: #fbf8ef;
-  font-family: sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-display: swap;
-  font-size: 24px;
-  font-weight: 900;
+  font-size: map-get(vars.$font-sizes, board);
+  font-weight: 700;
   background-image: url(../images/background-image_2048.jpg);
   background-repeat: no-repeat;
   background-size: cover;
@@ -26,9 +27,10 @@ body {
 }
 
 .field-cell {
+  @extend .cell-size;
+
+  text-shadow: 1px 1px 2px #9d9288;
   background: #d6cdc4;
-  width: 75px;
-  height: 75px;
   border-radius: 5px;
   color: #776e65;
   box-sizing: border-box;
@@ -58,44 +60,39 @@ body {
   width: 100%;
   justify-content: space-between;
   margin-bottom: 24px;
-  padding: 10px;
   box-sizing: border-box;
 }
 
 h1 {
-  background: #edc22e;
-  color: #f9f6f2;
-  width: 75px;
-  height: 75px;
-  font-size: 24px;
+  color: #776e65;
+  font-size: 72px;
   border-radius: 5px;
   display: flex;
-  align-items: center;
   justify-content: center;
   box-sizing: border-box;
   margin: 0;
 }
 
 .info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #fff2e6;
-  width: 75px;
-  height: 75px;
-  border-radius: 5px;
+  @extend .cell-size;
+
   color: #776e65;
   box-sizing: border-box;
-  font-size: 16px;
-  margin: 0 8px 0 0;
+  background: #fff2e6;
+  border-radius: 5px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 26px;
+  display: flex;
   position: relative;
+  margin: 0;
 }
 
 .game-score-number {
   color: #776e65;
   opacity: 0;
-  font-size: 26px;
+  font-size: map-get(vars.$font-sizes, btn);
   position: absolute;
   transform: translate(50%, 50%);
   z-index: 1;
@@ -107,6 +104,8 @@ h1 {
 
 .controls {
   display: flex;
+  flex-direction: row;
+  gap: 8px;
   position: relative;
   transition:
     all,
@@ -114,22 +113,23 @@ h1 {
 }
 
 .button {
+  @extend .control-size;
+  font-family: inherit;
+  font-size: map-get(vars.$font-sizes, btn);
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   color: #f9f6f2;
-  font-family: sans-serif;
   font-weight: 700;
-  font-size: 16px;
-  width: 75px;
-  height: 75px;
   outline: none;
-  box-shadow: none;
 }
 
 .start {
   background: #1dae28;
-  font-size: 20px;
 
   &:hover {
     background: #179921;
@@ -147,18 +147,19 @@ h1 {
 .message {
   box-sizing: border-box;
   width: 100%;
-  background: #d6cdc4;
+  background: #fff2e6;
   color: #776e65;
   padding: 10px;
   text-align: center;
   border-radius: 5px;
-  font-size: 20px;
+  font-size: map-get(vars.$font-sizes, btn);
 
   &-start {
     position: absolute;
     opacity: 0;
     transform: scale(0);
     transition: all 1s ease-out;
+    box-shadow: 0 2px 5px 1px #776e65;
   }
 }
 
@@ -170,7 +171,6 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 350px;
   position: relative;
 }
 

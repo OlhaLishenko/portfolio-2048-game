@@ -9,7 +9,7 @@ function getRandomNumber() {
   return Math.random() <= 0.9 ? 2 : 4;
 }
 
-export class Game {
+class Game {
   constructor() {
     this.board = [];
 
@@ -36,7 +36,12 @@ export class Game {
   }
 
   addNumber() {
-    this.getRandomCell().valueNum = getRandomNumber();
+    const cell = this.getRandomCell();
+
+    if (!cell) {
+      return;
+    }
+    cell.valueNum = getRandomNumber();
   }
 
   updateBoard() {
@@ -61,16 +66,30 @@ export class Game {
     });
   }
 
-  groupCellsByRows() {
-    return this.board.reduce((cellsGroup, cellItem) => {
-      if (!cellsGroup[cellItem.x]) {
-        cellsGroup[cellItem.x] = [];
+  getBoardValues() {
+    return this.board.map((cell) => cell.valueNum);
+  }
+
+  isGameOver() {
+    if (this.getRandomCell()) {
+      return false;
+    }
+
+    for (const cell of this.board) {
+      const right = this.board.find(
+        (c) => c.x === cell.x && c.y === cell.y + 1,
+      );
+      const down = this.board.find((c) => c.x === cell.x + 1 && c.y === cell.y);
+
+      if (
+        (right && right.valueNum === cell.valueNum) ||
+        (down && down.valueNum === cell.valueNum)
+      ) {
+        return false;
       }
+    }
 
-      cellsGroup[cellItem.x].push(cellItem);
-
-      return cellsGroup;
-    }, []);
+    return true;
   }
 }
 
